@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace backend.Controllers;
 
-[Route("register")]
+[Route("accounts")]
 [ApiController]
 [ApiExplorerSettings(GroupName = "v1")]
 public class UserRegisterController : ControllerBase {
@@ -19,7 +19,7 @@ public class UserRegisterController : ControllerBase {
     }
 
     // Get all users
-    [HttpGet]
+    [HttpGet("/register")]
     public IActionResult GetAll() {
         var users = _db.UserModel.ToList();
         return Ok(users);
