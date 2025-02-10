@@ -33,7 +33,7 @@ public class UserRegisterController : ControllerBase {
     }
 
     // Register user
-    [HttpPost]
+    [HttpPost("register")]
 public IActionResult RegisterUser([FromBody] UserModel user) {
     if (user == null) {
         return BadRequest("User data is required");

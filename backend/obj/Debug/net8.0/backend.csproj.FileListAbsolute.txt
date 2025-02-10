@@ -132,6 +132,7 @@ D:\College\3rd YEAR\1st Sem\FYP\hospital Managemebt system\backend\obj\Debug\net
 D:\College\3rd YEAR\1st Sem\FYP\hospital Managemebt system\backend\obj\Debug\net8.0\backend.csproj.CoreCompileInputs.cache
 D:\College\3rd YEAR\1st Sem\FYP\hospital Managemebt system\backend\obj\Debug\net8.0\backend.MvcApplicationPartsAssemblyInfo.cs
 D:\College\3rd YEAR\1st Sem\FYP\hospital Managemebt system\backend\obj\Debug\net8.0\backend.MvcApplicationPartsAssemblyInfo.cache
+D:\College\3rd YEAR\1st Sem\FYP\hospital Managemebt system\backend\obj\Debug\net8.0\backend.sourcelink.json
 D:\College\3rd YEAR\1st Sem\FYP\hospital Managemebt system\backend\obj\Debug\net8.0\staticwebassets.build.json
 D:\College\3rd YEAR\1st Sem\FYP\hospital Managemebt system\backend\obj\Debug\net8.0\staticwebassets.development.json
 D:\College\3rd YEAR\1st Sem\FYP\hospital Managemebt system\backend\obj\Debug\net8.0\staticwebassets\msbuild.backend.Microsoft.AspNetCore.StaticWebAssets.props
