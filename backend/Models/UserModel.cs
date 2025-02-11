@@ -11,8 +11,4 @@
         public string Usermail {get; set;} = string.Empty;
         public UserType userType {get; set;}
         public string password {get; set;} = string.Empty;
-        public int userAge {get; set;}
-        public string userBloodGroup {get; set;}
-        public string userMedicalDiagnosis {get; set;}
-        public string userAddress {get; set;}
     }

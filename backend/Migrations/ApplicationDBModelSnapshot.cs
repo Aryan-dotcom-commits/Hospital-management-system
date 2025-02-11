@@ -44,17 +44,6 @@ namespace backend.Migrations
                     b.Property<int>("userType")
                         .HasColumnType("int");
 
-                    b.Property<int>("userAge")
-                        .HasColumnType("int");
-
-                    b.Property<string>("userBloodGroup")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("userMedicalDiagnosis")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("userAddress")
-                        .HasColumnType("nvarchar(max)");
                     b.HasKey("userID");
 
                     b.ToTable("userModel");
