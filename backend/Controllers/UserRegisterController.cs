@@ -117,7 +117,7 @@ public async Task<IActionResult> LoginUser([FromBody] UserModel user) {
         Response.Cookies.Append("AuthToken", "user_authenticated", cookieOptions);
 
         // Return a success response
-        return Ok(new { Message = "Success" });
+        return Ok(new { Message = "Success", cookie = cookieOptions });
     } catch (Exception ex) {
         return StatusCode(500, new { Message = "An error occurred during login", Error = ex.Message });
     }
