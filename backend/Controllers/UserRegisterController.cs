@@ -85,17 +85,41 @@ public IActionResult RegisterUser([FromBody] UserModel user) {
     }
 
     // Login user and display cookies
-    [HttpPost("login")]
+        [HttpPost("login")]
     public async Task<IActionResult> LoginUser([FromBody] UserModel user) {
         try {
             var existingUser = _db.UserModel.FirstOrDefault(u => u.Usermail == user.Usermail);
             if (existingUser == null) {
                 return Unauthorized(new { Message = "Invalid email or password" });
             }
-            return Ok(existingUser);
+
+            // Create claims
+            var claims = new List<Claim>
+            {
+                new Claim(ClaimTypes.Name, existingUser.Username),
+                new Claim(ClaimTypes.Email, existingUser.Usermail)
+            };
+
+            // Create identity and principal
+            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+            var principal = new ClaimsPrincipal(identity);
+
+            // Sign in the user and store the cookie
+            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+            // Retrieve and display cookies
+            var cookies = HttpContext.Request.Cookies;
+
+            return Ok(new {
+                Message = "Login Success",
+                Cookies = cookies
+            });
         }
         catch (Exception ex) {
             return StatusCode(500, new { Message = "An error occurred during login", Error = ex.Message });
         }
     }
 }
+
+    
+
