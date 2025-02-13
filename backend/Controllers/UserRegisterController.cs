@@ -4,6 +4,11 @@ using Data.ApplicationDB;
 using Models.UserModel;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace backend.Controllers;
 
@@ -24,6 +29,7 @@ public class UserRegisterController : ControllerBase {
         var users = _db.UserModel.ToList();
         return Ok(users);
     }
+
     // Get user by ID
     [HttpGet("{id}")]
     public IActionResult GetId([FromRoute] int id) {
@@ -34,41 +40,37 @@ public class UserRegisterController : ControllerBase {
 
     // Register user
     [HttpPost("register")]
-public IActionResult RegisterUser([FromBody] UserModel user) {
-    if (user == null) {
-        return BadRequest("User data is required");
-    }
-
-    try
-    {
-        // Check if user already exists
-        var existingUser = _db.UserModel.FirstOrDefault(u => u.Usermail == user.Usermail);
-        if (existingUser != null) {
-            return Conflict("User already exists with the given email.");
+    public IActionResult RegisterUser([FromBody] UserModel user) {
+        if (user == null) {
+            return BadRequest("User data is required");
         }
 
-        // Validate and append "@gmail.com" if missing
-        if (!user.Usermail.Contains(MustHaveMail)) {
-            user.Usermail += MustHaveMail;
+        try {
+            // Check if user already exists
+            var existingUser = _db.UserModel.FirstOrDefault(u => u.Usermail == user.Usermail);
+            if (existingUser != null) {
+                return Redirect("/login"); // Redirect if user already exists
+            }
+
+            // Validate and append "@gmail.com" if missing
+            if (!user.Usermail.Contains(MustHaveMail)) {
+                user.Usermail += MustHaveMail;
+            }
+
+            // Reject email if it's just "@gmail.com"
+            if (user.Usermail == "@gmail.com") {
+                return Conflict("Invalid email format.");
+            }
+
+            // Add user to the database
+            _db.UserModel.Add(user);
+            _db.SaveChanges();
+
+            return Redirect("/"); // Redirect on successful registration
+        } catch (Exception ex) {
+            return StatusCode(500, "Internal server error. Please try again later.");
         }
-
-        // Reject email if it's just "@gmail.com"
-        if (user.Usermail == "@gmail.com") {
-            return Conflict("Invalid email format.");
-        }
-
-        // Add user to the database
-        _db.UserModel.Add(user);
-        _db.SaveChanges();
-
-        return CreatedAtAction(nameof(GetId), new { id = user.userID }, user);
     }
-    catch (Exception ex)
-    {
-        return StatusCode(500, "Internal server error. Please try again later.");
-    }
-}
-
 
     // Delete user
     [HttpDelete("{id}")]
@@ -84,42 +86,49 @@ public IActionResult RegisterUser([FromBody] UserModel user) {
         return Ok($"User with ID {id} has been deleted.");
     }
 
-    // Login user and display cookies
-        [HttpPost("login")]
-    public async Task<IActionResult> LoginUser([FromBody] UserModel user) {
-        try {
-            var existingUser = _db.UserModel.FirstOrDefault(u => u.Usermail == user.Usermail);
-            if (existingUser == null) {
-                return Unauthorized(new { Message = "Invalid email or password" });
-            }
-
-            // Create claims
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.Name, existingUser.Username),
-                new Claim(ClaimTypes.Email, existingUser.Usermail)
-            };
-
-            // Create identity and principal
-            var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-            var principal = new ClaimsPrincipal(identity);
-
-            // Sign in the user and store the cookie
-            await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
-
-            // Retrieve and display cookies
-            var cookies = HttpContext.Request.Cookies;
-
-            return Ok(new {
-                Message = "Login Success",
-                Cookies = cookies
-            });
+    [HttpPost("login")]
+public async Task<IActionResult> LoginUser([FromBody] UserModel user) {
+    try {
+        var existingUser = _db.UserModel.FirstOrDefault(u => u.Usermail == user.Usermail);
+        if (existingUser == null) {
+            return NotFound(new { Message = "Email not found. Please register." });
         }
-        catch (Exception ex) {
-            return StatusCode(500, new { Message = "An error occurred during login", Error = ex.Message });
-        }
+
+        // Create claims
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.Name, existingUser.Username),
+            new Claim(ClaimTypes.Email, existingUser.Usermail)
+        };
+
+        // Create identity and principal
+        var identity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
+        var principal = new ClaimsPrincipal(identity);
+
+        // Sign in the user and store the cookie
+        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+        // Set authentication cookie (valid for 1 minute)
+        var cookieOptions = new CookieOptions
+        {
+            Expires = DateTime.UtcNow.AddMinutes(1),
+            HttpOnly = true
+        };
+        Response.Cookies.Append("AuthToken", "user_authenticated", cookieOptions);
+
+        // Return a success response
+        return Ok(new { Message = "Success" });
+    } catch (Exception ex) {
+        return StatusCode(500, new { Message = "An error occurred during login", Error = ex.Message });
     }
 }
 
-    
-
+    // Middleware to check session
+    [HttpGet("check-session")]
+    public IActionResult CheckSession() {
+        if (!Request.Cookies.ContainsKey("AuthToken")) {
+            return Redirect("/login");
+        }
+        return Redirect("/");
+    }
+}
