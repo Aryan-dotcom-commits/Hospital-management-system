@@ -8,4 +8,6 @@ public class ApplicationDB : DbContext {
     }
 
     public DbSet<UserModel> UserModel {get; set;}
+    public DbSet<DoctorModel> Doctors {get; set;}
+    public DbSet<Patient> Patient {get; set;}
 }
