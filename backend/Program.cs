@@ -2,7 +2,9 @@ using Data.ApplicationDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
-
+using Microsoft.Extensions.DependencyInjection;
+using AutoMapper;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +15,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options => {
     options.AddPolicy("AllowAll", 
         policy => {
-            policy.WithOrigins("http://localhost:5174")
+            policy.WithOrigins("http://localhost:5173")
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();
@@ -40,6 +42,9 @@ builder.Services.AddHttpContextAccessor();
 
 // Add authorization
 builder.Services.AddAuthorization();
+
+
+
 
 // Add controllers
 builder.Services.AddControllers();

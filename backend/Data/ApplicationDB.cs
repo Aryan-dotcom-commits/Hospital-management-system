@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Models.DoctorModel;
+using Models.Patient;
 using Models.UserModel;
 namespace Data.ApplicationDB;
 

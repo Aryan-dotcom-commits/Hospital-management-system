@@ -2,12 +2,12 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using Models.UserModel;
 
-namespace backend.Models
+namespace Models.DoctorModel
 {
-    public class DoctorModel : UserModel
+    public class DoctorModel
     {
         [Key]
-        public int DoctorID {get; set;}
+        public int DoctorId {get; set;}
         [Required]
         public string Specialty { get; set; } = string.Empty;
 
