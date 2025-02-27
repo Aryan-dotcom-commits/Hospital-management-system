@@ -41,53 +41,47 @@ public class UserRegisterController : ControllerBase {
         return Ok(user);
     }
 
-    // Register user
     [HttpPost("register")]
-    public IActionResult RegisterUser([FromBody] UserModel user) {
-        if (user == null) {
-            return BadRequest("User data is required");
-        }
-
-        try {
-            // Check if user already exists
-            var existingUser = _db.UserModel.FirstOrDefault(u => u.Usermail == user.Usermail);
-            if (existingUser != null) {
-                return Redirect("/login"); // Redirect if user already exists
-            }
-
-            // Validate and append "@gmail.com" if missing
-            if (!user.Usermail.Contains(MustHaveMail)) {
-                user.Usermail += MustHaveMail;
-            }
-
-            // Reject email if it's just "@gmail.com"
-            if (user.Usermail == "@gmail.com") {
-                return Conflict("Invalid email format.");
-            }
-
-            // Add user to the database
-            _db.UserModel.Add(user);
-            _db.SaveChanges();
-
-            return Redirect("/"); // Redirect on successful registration
-        } catch (Exception ex) {
-            return StatusCode(500, "Internal server error. Please try again later.");
-        }
+public IActionResult RegisterUser([FromBody] UserModel user) {
+    if (user == null) {
+        return BadRequest("User data is required");
     }
 
-    // Delete user
-    [HttpDelete("{id}")]
-    public IActionResult DeleteUser([FromRoute] int id) {
-        var user = _db.UserModel.FirstOrDefault(u => u.userID == id);
-        if (user == null) {
-            return NotFound("User not found.");
+    try {
+        // Check if user already exists with the provided email (even without @gmail.com)
+        var existingUser = _db.UserModel.FirstOrDefault(u => u.Usermail == user.Usermail);
+        if (existingUser != null) {
+            return Conflict("Mail already in use. Please Login");
         }
 
-        _db.UserModel.Remove(user);
+        // Validate and append "@gmail.com" if missing
+        if (!user.Usermail.Contains(MustHaveMail)) {
+            var modifiedEmail = user.Usermail + MustHaveMail; // Append only if @gmail.com is missing
+
+            // Check again if the modified email already exists
+            existingUser = _db.UserModel.FirstOrDefault(u => u.Usermail == modifiedEmail);
+            if (existingUser != null) {
+                return Conflict("Mail already in use. Please Login");
+            }
+
+            // Now assign the modified email to the user
+            user.Usermail = modifiedEmail;
+        }
+
+        // Reject email if it's just "@gmail.com" (invalid format)
+        if (user.Usermail == "@gmail.com") {
+            return Conflict("Invalid email format.");
+        }
+
+        // Add user to the database
+        _db.UserModel.Add(user);
         _db.SaveChanges();
 
-        return Ok($"User with ID {id} has been deleted.");
+        return Ok(new { Message = "Success" }); // Returns success message after registration
+    } catch (Exception ex) {
+        return StatusCode(500, "Internal server error. Please try again later.");
     }
+}
 
         [HttpPost("login")]
     public async Task<IActionResult> LoginUser([FromBody] LoginDto login) {
@@ -114,7 +108,7 @@ public class UserRegisterController : ControllerBase {
             // Set authentication cookie (valid for 1 minute)
             var cookieOptions = new CookieOptions
             {
-                Expires = DateTime.UtcNow.AddMinutes(1),
+                Expires = DateTime.UtcNow.AddMinutes(30),
                 HttpOnly = true
             };
             Response.Cookies.Append("AuthToken", "user_authenticated", cookieOptions);
